@@ -72,9 +72,13 @@ module ActiveReload
       end
     end
 
-    delegate :insert, :update, :delete, :create_table, :rename_table, :drop_table, :add_column, :remove_column,
+    delegate :insert, :update, :delete, :delete_all, :create_table, :rename_table, :drop_table, :add_column, :remove_column,
       :change_column, :change_column_default, :rename_column, :add_index, :remove_index, :initialize_schema_information,
-      :dump_schema_information, :execute, :columns, :to => :master
+      :dump_schema_information, :columns, :to => :master
+
+    def execute(sql)
+      (sql.lstrip.split(" ")[0].downcase == "select" rescue nil) ?  @slave.execute(sql) : @master.execute(sql)
+    end
 
     def transaction(start_db_transaction = true, &block)
       with_master(start_db_transaction) do
